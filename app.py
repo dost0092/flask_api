@@ -41,3 +41,39 @@ def getdata():
     except psycopg2.Error as e:
         print(f"Database query error: {e}")
         return jsonify({"error": "Database query failed"}), 500
+
+
+
+
+@app.route("/<int:city_id>", methods=["GET"])
+
+def get_city_by_id(city_id):
+    conn = connect_pdb()
+    if conn is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM cities_20241010_muz WHERE id = %s;", (city_id,))
+        data = cursor.fetchone()
+        
+        cursor.close()
+        conn.close()
+        
+        if data is None:
+            return jsonify({"error": "City not found"}), 404
+        
+        result = {
+            "id": data[0],         
+            "name": data[1],
+            "county": data[2],
+            "state": data[3],
+            "date_created": data[4],
+            "state_updated": data[5]
+        }
+
+        return jsonify(result) 
+    
+    except psycopg2.Error as e:
+        print(f"Database query error: {e}")
+        return jsonify({"error": "Database query failed"}), 500
