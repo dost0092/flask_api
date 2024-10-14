@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <title>City API Visualization</title>
+
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            margin-top: 30px;
+        }
+
+        .logo {
+            display: block;
+            margin: 0 auto 20px;
+        }
+
+        h1 {
+            color: #4458a4;
+        }
+
+        .city-info {
+            background-color: #e9f7fe;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+       
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd; 
+        }
+
+        th {
+            background-color: #4458a4; 
+            color: white; 
+        }
+
+        tr:hover {
+            background-color: #f1f1f1; 
+        }
+
+        
+    .btn-primary {
+        background-color: #4458a4; 
+        border-color: #4458a4;
+    }
+
+    .btn-primary:hover {
+        background-color: #4458a4;
+        border-color: #4458a4; 
+    }
+
+    .pagination .page-item.active .page-link {
+        background-color: #4458a4; 
+        border-color: #4458a4; 
+    }
+
+    .pagination .page-link {
+        color: #4458a4; 
+    }
+
+    .pagination .page-link:hover {
+        background-color: #4458a4; 
+        color: white; 
+    }
+
+
+
+
+
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='assets/assets.png') }}" alt="Zoneomics Logo" class="logo" />
+
+        <h1 class="text-center">Zoneomics City Information</h1>
+        <form id="searchForm" class="mb-4">
+            <div class="form-row">
+                <div class="col">
+                    <input type="number" class="form-control" id="cityId" placeholder="City ID" />
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" id="stateName" placeholder="State Name" />
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" id="cityName" placeholder="City Name" />
+                </div>
+                <div class="col">
+                    <input type="date" class="form-control" id="modifiedDate" placeholder="Modified After" />
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="resultContainer" class="city-info mb-4"></div>
+
+        <nav>
+            <ul class="pagination justify-content-center" id="paginationControls"></ul>
+        </nav>
+    </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script>
+        let currentPage = 1;
+        let totalPages = 0;
+        const limit = 10;
+
+        function fetchCities() {
+            const cityId = $("#cityId").val();
+            const stateName = $("#stateName").val();
+            const cityName = $("#cityName").val();
+            const modifiedDate = $("#modifiedDate").val();
+
+            let url = `/cities?page=${currentPage}&limit=${limit}`;
+            if (cityId) url += `&city_id=${cityId}`;
+            if (stateName) url += `&state_name=${stateName}`;
+            if (cityName) url += `&city_name=${cityName}`;
+            if (modifiedDate) url += `&modified_after=${modifiedDate}`;
+
+            $.getJSON(url, function (data) {
+                if (data.error) {
+                    $("#resultContainer").html(
+                        `<div class="alert alert-danger">${data.error}</div>`
+                    );
+                    return;
+                }
+
+                totalPages = data.total_pages;
+                displayResults(data.cities);
+                setupPagination();
+            });
+        }
+
+        function displayResults(cities) {
+            const resultContainer = $("#resultContainer");
+            resultContainer.empty();
+            if (cities.length === 0) {
+                resultContainer.append(
+                    '<div class="alert alert-warning">No cities found.</div>'
+                );
+                return;
+            }
+
+            const table = `<table class="table table-bordered table-striped"> 
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>County</th>
+                        <th>State</th>
+                        <th>Date Created</th>
+                        <th>Date Modified</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${cities
+                    .map(
+                        (city) => `
+                    <tr>
+                        <td>${city.id}</td>
+                        <td>${city.name}</td>
+                        <td>${city.county}</td>
+                        <td>${city.state}</td>
+                        <td>${new Date(city.date_created).toLocaleDateString()}</td>
+                        <td>${new Date(city.date_modified).toLocaleDateString()}</td>
+                    </tr>
+                    `
+                    )
+                    .join("")}
+                </tbody>
+            </table>`;
+            resultContainer.append(table);
+        }
+
+        function setupPagination() {
+            const paginationControls = $("#paginationControls");
+            paginationControls.empty();
+
+            const maxPagesToShow = 10;
+            const halfMax = Math.floor(maxPagesToShow / 2);
+            let startPage = Math.max(currentPage - halfMax, 1);
+            let endPage = Math.min(startPage + maxPagesToShow - 1, totalPages);
+
+            if (endPage - startPage < maxPagesToShow - 1) {
+                startPage = Math.max(endPage - maxPagesToShow + 1, 1);
+            }
+
+            // previous button
+            if (currentPage > 1) {
+                paginationControls.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
+            </li>
+        `);
+            }
+
+            // page buttons
+            for (let i = startPage; i <= endPage; i++) {
+                const pageItem = `
+            <li class="page-item ${currentPage === i ? "active" : ""}">
+                <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>`;
+                paginationControls.append(pageItem);
+            }
+
+            // next button
+            if (currentPage < totalPages) {
+                paginationControls.append(`
+            <li class="page-item">
+                <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
+            </li>
+        `);
+            }
+
+            //total pages
+            paginationControls.append(`
+        <li class="page-item disabled">
+            <span class="page-link">upto ${totalPages}</span>
+        </li>
+    `);
+
+            // event handler 
+            $(".page-link").click(function (event) {
+                event.preventDefault();
+                currentPage = $(this).data("page");
+                fetchCities();
+            });
+        }
+
+
+        $("#searchForm").submit(function (event) {
+            event.preventDefault();
+            currentPage = 1;
+            fetchCities();
+        });
+    </script>  
+
+
+</body>
+
+</html>
+
+
+<!-- 
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="styles.css">
+    <title>City API Visualization</title>
+</head>
+
+<body>
+    <div class="container">
+        <img src="{{ url_for('static', filename='assets/assets.png') }}" alt="Zoneomics Logo" class="logo" />
+
+        <h1 class="text-center">Zoneomics City Information</h1>
+        <form id="searchForm" class="mb-4">
+            <div class="form-row">
+                <div class="col">
+                    <input type="number" class="form-control" id="cityId" placeholder="City ID" />
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" id="stateName" placeholder="State Name" />
+                </div>
+                <div class="col">
+                    <input type="text" class="form-control" id="cityName" placeholder="City Name" />
+                </div>
+                <div class="col">
+                    <input type="date" class="form-control" id="modifiedDate" placeholder="Modified After" />
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary">Search</button>
+                </div>
+            </div>
+        </form>
+
+        <div id="resultContainer" class="city-info mb-4"></div>
+
+        <nav>
+            <ul class="pagination justify-content-center" id="paginationControls"></ul>
+        </nav>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html> -->
+
+
+
+
+
+

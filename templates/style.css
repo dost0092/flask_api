@@ -1,0 +1,99 @@
+/* body {
+  background-color: #f8f9fa;
+}
+
+.container {
+  margin-top: 30px;
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 20px;
+}
+
+h1 {
+  color: #4458a4;
+}
+
+.city-info {
+  background-color: #e9f7fe;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+} */
+
+
+
+
+
+
+
+body {
+  background-color: #f8f9fa;
+}
+
+.container {
+  margin-top: 30px;
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 20px;
+}
+
+h1 {
+  color: #4458a4;
+}
+
+.city-info {
+  background-color: #e9f7fe;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border: 1px solid #ddd; 
+}
+
+th {
+  background-color: #4458a4; 
+  color: white; 
+}
+
+tr:hover {
+  background-color: #f1f1f1; 
+}
+
+
+.btn-primary {
+background-color: #4458a4; 
+border-color: #4458a4;
+}
+
+.btn-primary:hover {
+background-color: #4458a4;
+border-color: #4458a4; 
+}
+
+.pagination .page-item.active .page-link {
+background-color: #4458a4; 
+border-color: #4458a4; 
+}
+
+.pagination .page-link {
+color: #4458a4; 
+}
+
+.pagination .page-link:hover {
+background-color: #4458a4; 
+color: white; 
+}
