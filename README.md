@@ -66,6 +66,3 @@ This project provides a web interface for visualizing city information from an A
 4. Configure the database connection.
 5. Run the application.
 
-## License
-This project is licensed under the MIT License.
-
